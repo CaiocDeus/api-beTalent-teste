@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
-use App\Http\Requests\StoreTransactionRequest;
-use App\Http\Requests\UpdateTransactionRequest;
+use App\Http\Requests\Transaction\TransactionStoreRequest;
+use App\Models\Product;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
+
 
 class TransactionController extends Controller
 {
@@ -13,54 +16,59 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return JsonResource::collection(Transaction::all());
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTransactionRequest $request)
+    public function store(TransactionStoreRequest $request)
     {
-        //
+        // TODO Remove isso?
+        $products_bd = Product::whereIn('id', array_column($request->products, 'id'))->get();
+        $amount = 0;
+
+        foreach ($request->products as $product) {
+            $product_bd = $products_bd->where('id', $product['id'])->first();
+            $amount += $product_bd->amount * $product['quantity'];
+        }
+
+        $transaction = new Transaction;
+        $transaction->client_id = $request->client_id;
+        $transaction->gateway_id = $request->gateway_id;
+        $transaction->external_id = is_null($request->external_id) ? null : $request->external_id;
+        $transaction->card_last_numbers = $request->card_last_numbers;
+        $transaction->$amount = $amount;
+        $transaction->status = 'completed';
+        $transaction->save();
+
+        return response()->json([
+            "message" => "Transação efetuada"
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Transaction $transaction)
+    public function show(string $id)
     {
-        //
-    }
+        $transaction = Transaction::with('products')->findOrFail($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Transaction $transaction)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateTransactionRequest $request, Transaction $transaction)
-    {
-        //
+        return new JsonResource($transaction);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Transaction $transaction)
+    public function refund(string $id)
     {
-        //
+        $transaction = Transaction::findOrFail($id);
+
+        $transaction->status = 'refunded';
+        $transaction->save();
+
+        return response()->json([
+            "message" => "Transação reembolsada"
+        ]);
     }
 }

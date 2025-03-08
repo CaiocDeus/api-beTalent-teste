@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('client_id')->constrained();
             $table->foreignUuid('gateway_id')->constrained();
             $table->string('external_id')->nullable();
-            $table->integer('status');
+            $table->string('status', 30);
             $table->decimal('amount');
             $table->string('card_last_numbers', 4);
             $table->timestamps();
@@ -35,6 +35,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('transaction_products');
         Schema::dropIfExists('transactions');
     }
 };

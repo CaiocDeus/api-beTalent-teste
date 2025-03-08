@@ -19,11 +19,4 @@ class Gateway extends Model
         'is_active',
         'priority',
     ];
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    // public $timestamps = false;
 }

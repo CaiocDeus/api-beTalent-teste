@@ -41,6 +41,13 @@ class ClientController extends Controller
         return new JsonResource(Client::findOrFail($id));
     }
 
+    public function clientWithTransactions(string $id)
+    {
+        $client = Client::with('transactions')->findOrFail($id);
+
+        return new JsonResource($client);
+    }
+
     /**
      * Update the specified resource in storage.
      */

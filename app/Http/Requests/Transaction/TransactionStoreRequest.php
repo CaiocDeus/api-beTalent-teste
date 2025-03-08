@@ -18,10 +18,11 @@ class TransactionStoreRequest extends FormRequest
         return [
             'client_id' => ['required', 'string'],
             'gateway_id' => ['required', 'string'],
-            'external_id' => ['string'],
-            'status' => ['required', 'string'],
-            'amount' => ['required', 'decimal:1,2'],
+            'external_id' => ['nullable', 'string'],
             'card_last_numbers' => ['required', 'string'],
+            'products' => ['present', 'filled', 'array'],
+            'products.*.id' => ['required', 'string'],
+            'products.*.quantity' => ['required', 'numeric', 'integer'],
         ];
     }
 
