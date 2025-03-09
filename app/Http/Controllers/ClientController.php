@@ -22,10 +22,7 @@ class ClientController extends Controller
      */
     public function store(ClientStoreRequest $request)
     {
-        $client = new Client;
-        $client->name = $request->name;
-        $client->email = $request->email;
-        $client->save();
+        $client = Client::create($request->all());
 
         return response()->json([
             "id" => $client->id,
@@ -55,8 +52,7 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
 
-        $client->name = is_null($request->name) ? $client->name : $request->name;
-        $client->email = is_null($request->email) ? $client->email : $request->email;
+        $client->fill($request->all());
         $client->save();
 
         return response()->json([

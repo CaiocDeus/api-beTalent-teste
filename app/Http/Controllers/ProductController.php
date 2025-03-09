@@ -22,10 +22,7 @@ class ProductController extends Controller
      */
     public function store(ProductStoreRequest $request)
     {
-        $product = new Product;
-        $product->name = $request->name;
-        $product->amount = $request->amount;
-        $product->save();
+        $product = Product::create($request->all());
 
         return response()->json([
             "id" => $product->id,
@@ -48,8 +45,7 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        $product->name = is_null($request->name) ? $product->name : $request->name;
-        $product->amount = is_null($request->amount) ? $product->amount : $request->amount;
+        $product->fill($request->all());
         $product->save();
 
         return response()->json([

@@ -17,14 +17,6 @@ class GatewayController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        return new JsonResource(Gateway::findOrFail($id));
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function changeStatus(string $id)
@@ -48,7 +40,7 @@ class GatewayController extends Controller
 
         $priority = $request->priority;
 
-        $gateways = Gateway::where('priority', $priority);
+        $gateways = Gateway::where(['priority', $priority])->where(['status', true])->get();
 
         foreach ($gateways as $key => &$gateway) {
             $gateway->priority = $key + 1 + $priority;

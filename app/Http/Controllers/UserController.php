@@ -25,11 +25,7 @@ class UserController extends Controller
      */
     public function store(UserStoreRequest $request)
     {
-        $user = new User;
-        $user->email = $request->email;
-        $user->password = $request->password;
-        $user->role = $request->role;
-        $user->save();
+        $user = User::create($request->all());
 
         return response()->json([
             "id" => $user->id,
@@ -52,9 +48,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $user->email = is_null($request->email) ? $user->email : $request->email;
-        $user->password = is_null($request->password) ? $user->password : $request->password;
-        $user->role = is_null($request->role) ? $user->role : $request->role;
+        $user->fill($request->all());
         $user->save();
 
         return response()->json([
@@ -76,9 +70,7 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // TODO Verificar se precisa colocar em um Service
     public function login(Request $request)
     {
         $user = User::where([

@@ -6,7 +6,6 @@ use App\Models\Transaction;
 use App\Http\Requests\Transaction\TransactionStoreRequest;
 use App\Models\Product;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
 
 
 class TransactionController extends Controller
