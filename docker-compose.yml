@@ -1,54 +1,64 @@
-version: '3.8'
-
 services:
-  # Serviço da aplicação (API)
-  app:
-    container_name: app-service
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=BeTalent
-      - DB_USER=root
-      - DB_PASSWORD=
-    ports:
-      - "8000:8000"  # Porta da API
-    depends_on:
-      - db
-      - gateway
-    networks:
-      - app_network
-
-  # Banco de Dados (MySQL)
-  db:
-    container_name: db-service
-    image: mysql:8.0
-    environment:
-      - MYSQL_DATABASE=BeTalent
-      - MYSQL_ALLOW_EMPTY_PASSWORD=true
-    volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"  # Porta para acessar o MySQL
-    networks:
-      - app_network
-
-  # Gateway
-  gateway:
-    container_name: gateway-service
-    image: matheusprotzen/gateways-mock
-    ports:
-      - "3001:3001"
-      - "3002:3002"
-    networks:
-      - app_network
-
+    laravel.test:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.4
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: sail-8.4/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-80}:80'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - mysql
+            - gateway
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - 'sail-mysql:/var/lib/mysql'
+            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+    gateway:
+        container_name: gateway-service
+        image: matheusprotzen/gateways-mock
+        ports:
+            - '3001:3001'
+            - '3002:3002'
+        networks:
+            - sail
 networks:
-  app_network:
-    driver: bridge
-
+    sail:
+        driver: bridge
 volumes:
-  db_data:
-    driver: local
+    sail-mysql:
+        driver: local

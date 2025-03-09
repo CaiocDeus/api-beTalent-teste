@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
-use App\Http\Requests\Transaction\TransactionStoreRequest;
 use App\Models\Product;
+use App\Models\Transaction;
+use App\Services\Gateways\GatewayManager;
+use App\Http\Requests\Transaction\TransactionStoreRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 
 class TransactionController extends Controller
 {
+
+    protected $gatewayManager;
+
+    public function __construct(GatewayManager $gatewayManager)
+    {
+        $this->gatewayManager = $gatewayManager;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -23,7 +32,6 @@ class TransactionController extends Controller
      */
     public function store(TransactionStoreRequest $request)
     {
-        // TODO Remove isso?
         $products_bd = Product::whereIn('id', array_column($request->products, 'id'))->get();
         $amount = 0;
 
@@ -32,13 +40,18 @@ class TransactionController extends Controller
             $amount += $product_bd->amount * $product['quantity'];
         }
 
+        $response = $this->gatewayManager->processPayment(array_merge(
+            $request->all(),
+            ['amount' => $amount]
+        ));
+
         $transaction = new Transaction;
         $transaction->client_id = $request->client_id;
-        $transaction->gateway_id = $request->gateway_id;
-        $transaction->external_id = is_null($request->external_id) ? null : $request->external_id;
-        $transaction->card_last_numbers = $request->card_last_numbers;
-        $transaction->$amount = $amount;
-        $transaction->status = 'completed';
+        $transaction->gateway_id = $response['gateway_id'];
+        $transaction->external_id = $response['response']['id'];
+        $transaction->card_last_numbers = substr($request->cardNumber, -4);
+        $transaction->amount = $amount;
+        $transaction->status = 'paid';
         $transaction->save();
 
         return response()->json([
@@ -62,6 +75,8 @@ class TransactionController extends Controller
     public function refund(string $id)
     {
         $transaction = Transaction::findOrFail($id);
+
+        $response = $this->gatewayManager->processRefund($transaction->external_id, $transaction->gateway_id);
 
         $transaction->status = 'refunded';
         $transaction->save();

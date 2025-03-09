@@ -40,7 +40,7 @@ class GatewayController extends Controller
 
         $priority = $request->priority;
 
-        $gateways = Gateway::where(['priority', $priority])->where(['status', true])->get();
+        $gateways = Gateway::where(['priority', $priority])->where(['is_active', true])->get();
 
         foreach ($gateways as $key => &$gateway) {
             $gateway->priority = $key + 1 + $priority;
