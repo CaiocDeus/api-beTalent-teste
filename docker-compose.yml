@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Serviço da aplicação (API)
+  app:
+    container_name: app-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=BeTalent
+      - DB_USER=root
+      - DB_PASSWORD=
+    ports:
+      - "8000:8000"  # Porta da API
+    depends_on:
+      - db
+      - gateway
+    networks:
+      - app_network
+
+  # Banco de Dados (MySQL)
+  db:
+    container_name: db-service
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=BeTalent
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"  # Porta para acessar o MySQL
+    networks:
+      - app_network
+
+  # Gateway
+  gateway:
+    container_name: gateway-service
+    image: matheusprotzen/gateways-mock
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

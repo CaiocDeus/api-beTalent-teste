@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('gateways', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name')->unique();
-            $table->boolean('is_active');
+            $table->boolean('is_active')->default(true);
             $table->integer('priority');
             $table->timestamps();
         });
