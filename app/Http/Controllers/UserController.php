@@ -70,7 +70,6 @@ class UserController extends Controller
         ]);
     }
 
-    // TODO Verificar se precisa colocar em um Service
     public function login(Request $request)
     {
         $user = User::where([

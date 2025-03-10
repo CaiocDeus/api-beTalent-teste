@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Products;
+use App\Models\Product;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -12,8 +12,20 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        Products::factory()
-            ->count(10)
-            ->create();
+        Product::create([
+            'name' => 'Mochila', 'amount' => 50.5
+        ]);
+
+        Product::create([
+            'name' => 'Caderno', 'amount' => 29.99
+        ]);
+
+        Product::create([
+            'name' => 'Lapis', 'amount' => 3
+        ]);
+
+        Product::create([
+            'name' => 'Caneta', 'amount' => 5.25
+        ]);
     }
 }

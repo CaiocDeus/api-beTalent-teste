@@ -13,7 +13,7 @@ class ProductUpdateRequest extends ProductStoreRequest
     {
         return [
             'name' => ['string'],
-            'amount' => ['decimal:1,2'],
+            'amount' => ['decimal:0,2'],
         ];
     }
 }

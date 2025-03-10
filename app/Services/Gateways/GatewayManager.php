@@ -40,19 +40,13 @@ class GatewayManager
      */
     public function processPayment(array $data)
     {
-        $client = Client::firstOrFail($data['client_id']);
-
-        unset($data['client_id']);
-        $data['name'] = $client->name;
-        $data['email'] = $client->email;
-
         foreach ($this->gateways as $gateway_id => $gateway) {
-            if ($response = $gateway->createTransaction($data)) {
-                return response()->json([
+            if ($transaction_id = $gateway->createTransaction($this->ajustPaymentData($data))) {
+                return [
                     'message' => 'Pagamento realizado com sucesso',
                     'gateway_id' => $gateway_id,
-                    $response
-                ]);
+                    'transaction_id' => $transaction_id
+                ];
             }
         }
 
@@ -62,15 +56,15 @@ class GatewayManager
     /**
      * Processa um reembolso, tentando os gateways na ordem de prioridade.
      */
-    public function processRefund(int $transaction_id, int $gateway_id)
+    public function processRefund(string $transaction_id, string $gateway_id)
     {
         $gateway = $this->gateways[$gateway_id];
 
-        if ($response = $gateway->refundTransaction($transaction_id)) {
-            return response()->json([
+        if ($transaction_id = $gateway->refundTransaction($transaction_id)) {
+            return [
                 'message' => 'Reembolso realizado com sucesso',
-                $response
-            ]);
+                'transaction_id' => $transaction_id
+            ];
         }
 
         return response()->json(['error' => 'Falha ao processar o reembolso'], 400);
@@ -91,5 +85,17 @@ class GatewayManager
         }
 
         return response()->json($transactions);
+    }
+
+    private function ajustPaymentData(array $data) {
+        $client = Client::findOrFail($data['client_id']);
+
+        $data['name'] = $client->name;
+        $data['email'] = $client->email;
+
+        unset($data['client_id']);
+        unset($data['products']);
+
+        return $data;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Gateway;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 
 class GatewayController extends Controller
 {
@@ -13,7 +14,7 @@ class GatewayController extends Controller
      */
     public function index()
     {
-        return JsonResource::collection(Gateway::all());
+        return JsonResource::collection(Gateway::orderBy('priority', 'asc')->get());
     }
 
     /**
@@ -23,13 +24,13 @@ class GatewayController extends Controller
     {
         $gateway = Gateway::findOrFail($id);
 
-        $gateway->status = !$gateway->status;
+        $gateway->is_active = !$gateway->is_active;
         $gateway->save();
 
-        $texto = $gateway->status ? 'ativado' : 'desativado';
+        $texto = $gateway->is_active ? 'ativado' : 'desativado';
 
         return response()->json([
-            "message" => `Gateway $texto`
+            "message" => "Gateway {$texto}"
         ]);
     }
 
@@ -40,16 +41,22 @@ class GatewayController extends Controller
 
         $priority = $request->priority;
 
-        $gateways = Gateway::where(['priority', $priority])->where(['is_active', true])->get();
-
-        foreach ($gateways as $key => &$gateway) {
-            $gateway->priority = $key + 1 + $priority;
-        }
+        $gateways = Gateway::where([
+            ['priority', $priority],
+            ['is_active', true]
+        ])->get();
 
         $gateway->priority = $priority;
         $gateway->save();
 
-        $gateways->saveMany();
+        DB::transaction(function () use ($gateways, $priority) {
+            $count = 1;
+            $gateways->each(function ($gateway) use ($count, $priority) {
+                $gateway->priority = $count + $priority;
+                $gateway->save();
+                $count++;
+            });
+        });
 
         return response()->json([
             "message" => 'Prioridade do gateway alterada'

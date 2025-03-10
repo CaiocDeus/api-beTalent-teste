@@ -48,9 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [ClientController::class, 'destroy']);
     });
 
-    Route::middleware('ability:admin,manager,finance,user')->prefix('transaction')->group(function () {
-        Route::get('/', [UserController::class, 'index']);
-        Route::get('/{id}', [UserController::class, 'show']);
-        Route::put('/{id}/refund', [UserController::class, 'refund']);
+    Route::prefix('transaction')->group(function () {
+        Route::get('/', [TransactionController::class, 'index']);
+        Route::get('/{id}', [TransactionController::class, 'show']);
+        Route::put('/{id}/refund', [TransactionController::class, 'refund']);
     });
 });

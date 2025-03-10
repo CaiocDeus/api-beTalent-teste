@@ -32,27 +32,30 @@ class TransactionController extends Controller
      */
     public function store(TransactionStoreRequest $request)
     {
+        $transaction = new Transaction;
         $products_bd = Product::whereIn('id', array_column($request->products, 'id'))->get();
         $amount = 0;
+        $transaction_products = [];
 
         foreach ($request->products as $product) {
             $product_bd = $products_bd->where('id', $product['id'])->first();
             $amount += $product_bd->amount * $product['quantity'];
+            $transaction_products = array_merge($transaction_products, [$product['id'] =>  ['quantity' => $product['quantity']]]);
         }
 
         $response = $this->gatewayManager->processPayment(array_merge(
             $request->all(),
-            ['amount' => $amount]
+            ['amount' => round($amount, 0)]
         ));
 
-        $transaction = new Transaction;
         $transaction->client_id = $request->client_id;
         $transaction->gateway_id = $response['gateway_id'];
-        $transaction->external_id = $response['response']['id'];
+        $transaction->external_id = $response['transaction_id'];
         $transaction->card_last_numbers = substr($request->cardNumber, -4);
         $transaction->amount = $amount;
         $transaction->status = 'paid';
         $transaction->save();
+        $transaction->products()->sync($transaction_products);
 
         return response()->json([
             "message" => "Transação efetuada"
@@ -76,9 +79,9 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::findOrFail($id);
 
-        $response = $this->gatewayManager->processRefund($transaction->external_id, $transaction->gateway_id);
+        $this->gatewayManager->processRefund($transaction->external_id, $transaction->gateway_id);
 
-        $transaction->status = 'refunded';
+        $transaction->status = 'charged_back';
         $transaction->save();
 
         return response()->json([

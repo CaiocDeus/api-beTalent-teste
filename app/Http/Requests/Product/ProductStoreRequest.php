@@ -17,7 +17,7 @@ class ProductStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string'],
-            'amount' => ['required', 'decimal:1,2'],
+            'amount' => ['required', 'decimal:0,2'],
         ];
     }
 

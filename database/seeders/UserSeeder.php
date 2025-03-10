@@ -14,6 +14,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        User::create([
+            'email' => 'admin@admin.com',
+            'password' => 'admin',
+            'role' => 'admin'
+        ]);
+
         User::factory()
             ->count(12)
             ->state(new Sequence(
