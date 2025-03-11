@@ -22,8 +22,8 @@ class Gateway2Service implements GatewayInterface
     {
         $response = Http::withHeaders($this->headers)->post("{$this->url}/transacoes", $this->ajustTransactionData($transactionData));
 
-        if ($response->failed()) {
-            throw new \Exception('Erro ao criar transação no Gateway 2.');
+        if ($response->failed() || $response->json()['statusCode'] >= 400) {
+            return false;
         }
 
         return $response->json()['id'];
@@ -33,8 +33,8 @@ class Gateway2Service implements GatewayInterface
     {
         $response = Http::withHeaders($this->headers)->post("{$this->url}/transacoes/reembolso", ["id" => $transaction_id]);
 
-        if ($response->failed()) {
-            throw new \Exception('Erro ao processar reembolso no Gateway 2.');
+        if ($response->failed()  || $response->json()['statusCode'] >= 400) {
+            return false;
         }
 
         return $response->json();

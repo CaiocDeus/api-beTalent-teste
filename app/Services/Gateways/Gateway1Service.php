@@ -24,7 +24,7 @@ class Gateway1Service implements GatewayInterface
         $response = Http::withHeaders($this->headers)->post("{$this->url}/transactions", $transactionData);
 
         if ($response->failed()) {
-            throw new \Exception('Erro ao criar transação no Gateway 1.');
+            return false;
         }
 
         return $response->json()['id'];
@@ -35,7 +35,7 @@ class Gateway1Service implements GatewayInterface
         $response = Http::withHeaders($this->headers)->post("{$this->url}/{$transaction_id}/charge_back");
 
         if ($response->failed()) {
-            throw new \Exception('Erro ao processar reembolso no Gateway 1.');
+            return false;
         }
 
         return $response->json();

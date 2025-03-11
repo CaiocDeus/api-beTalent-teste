@@ -4,6 +4,7 @@ namespace App\Services\Gateways;
 
 use App\Models\Client;
 use App\Models\Gateway;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class GatewayManager
 {
@@ -50,7 +51,7 @@ class GatewayManager
             }
         }
 
-        return response()->json(['error' => 'Falha em todos os gateways'], 400);
+        throw new BadRequestException('Falha em todos os gateways', 400);
     }
 
     /**
@@ -67,7 +68,7 @@ class GatewayManager
             ];
         }
 
-        return response()->json(['error' => 'Falha ao processar o reembolso'], 400);
+        throw new BadRequestException('Falha em todos os gateways', 400);
     }
 
     /**
