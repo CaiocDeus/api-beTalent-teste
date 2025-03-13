@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Http\Requests\Client\ClientStoreRequest;
 use App\Http\Requests\Client\ClientUpdateRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ClientController extends Controller
@@ -12,9 +13,11 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return JsonResource::collection(Client::all());
+        $perPage = $request->integer('per_page', default: 20);
+
+        return JsonResource::collection(Client::query()->paginate($perPage));
     }
 
     /**

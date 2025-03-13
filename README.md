@@ -126,6 +126,10 @@ Para realizar o primeiro login utilize o usuário admin:
 
 ## 📑 Documentação da API
 
+Para auxiliar nos testes da API:
+
+- Vou disponibilizar esta [Collection](https://github.com/CaiocDeus/api-beTalent-teste/blob/master/api_beTalent_teste.json) para ser utilizado no Postman, no Insomnia ou em outras ferramentas
+
 ### Funcionalidades dos usuários em rotas públicas.
 
 <details>

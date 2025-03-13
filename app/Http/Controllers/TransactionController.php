@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Services\Gateways\GatewayManager;
 use App\Http\Requests\Transaction\TransactionStoreRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 
@@ -22,9 +23,11 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return JsonResource::collection(Transaction::all());
+        $perPage = $request->integer('per_page', default: 20);
+
+        return JsonResource::collection(Transaction::query()->paginate($perPage));
     }
 
     /**
@@ -46,7 +49,7 @@ class TransactionController extends Controller
 
             $response = $this->gatewayManager->processPayment(array_merge(
                 $request->all(),
-                ['amount' => $amount]
+                ['amount' => Round($amount)]
             ));
 
             $transaction->client_id = $request->client_id;

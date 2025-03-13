@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductController extends Controller
@@ -12,9 +13,11 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return JsonResource::collection(Product::all());
+        $perPage = $request->integer('per_page', default: 20);
+
+        return JsonResource::collection(Product::query()->paginate($perPage));
     }
 
     /**

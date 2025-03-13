@@ -15,9 +15,11 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return JsonResource::collection(User::all());
+        $perPage = $request->integer('per_page', default: 20);
+
+        return JsonResource::collection(User::query()->paginate($perPage));
     }
 
     /**
